@@ -1,4 +1,3 @@
-
 import { Suspense } from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -127,7 +126,7 @@ async function PainelProtegido() {
     {
       nome: "Professores",
       descricao: "Cadastro e gerenciamento dos docentes.",
-      href: null,
+      href: "/painel/gestor/professores",
     },
     {
       nome: "Alunos",
@@ -137,7 +136,7 @@ async function PainelProtegido() {
     {
       nome: "Tutoria",
       descricao: "Organização dos tutores e tutorados.",
-      href: null,
+      href: "/painel/gestor/tutores",
     },
     {
       nome: "Progressão escolar",
@@ -210,6 +209,20 @@ async function PainelProtegido() {
           className="rounded-lg border border-amber-500 px-5 py-3 font-bold text-amber-400 hover:bg-slate-800"
         >
           Gerenciar turmas
+        </Link>
+
+        <Link
+          href="/painel/gestor/professores"
+          className="rounded-lg border border-amber-500 px-5 py-3 font-bold text-amber-400 hover:bg-slate-800"
+        >
+          Gerenciar professores
+        </Link>
+
+        <Link
+          href="/painel/gestor/tutores"
+          className="rounded-lg border border-amber-500 px-5 py-3 font-bold text-amber-400 hover:bg-slate-800"
+        >
+          Gerenciar tutores
         </Link>
 
       </nav>

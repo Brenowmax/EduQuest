@@ -15,6 +15,10 @@ export type TipoPerfil =
   | "professor"
   | "aluno";
 
+type FuncaoInstitucional =
+  | "gestor"
+  | "professor";
+
 // ==========================================
 // OBTER PERFIL AUTENTICADO
 // ==========================================
@@ -53,21 +57,27 @@ export async function obterPerfilAtual() {
 }
 
 // ==========================================
-// VALIDAR VINCULO INSTITUCIONAL DO GESTOR
+// VALIDAR VINCULO INSTITUCIONAL
 // ==========================================
 
-async function validarAcessoGestor(
-  perfilId: string
+async function validarAcessoInstitucional(
+  perfilId: string,
+  funcao: FuncaoInstitucional
 ): Promise<void> {
+
   const supabase = await createClient();
 
-  const { data: vinculos, error: vinculoError } =
-    await supabase
-      .from("vinculos_escolares")
-      .select("escola_id")
-      .eq("perfil_id", perfilId)
-      .eq("funcao", "gestor")
-      .eq("ativo", true);
+  // Consultar os vinculos ativos do usuario.
+
+  const {
+    data: vinculos,
+    error: vinculoError,
+  } = await supabase
+    .from("vinculos_escolares")
+    .select("escola_id")
+    .eq("perfil_id", perfilId)
+    .eq("funcao", funcao)
+    .eq("ativo", true);
 
   if (
     vinculoError ||
@@ -77,17 +87,27 @@ async function validarAcessoGestor(
     redirect("/acesso-negado");
   }
 
-  const escolasIds = vinculos.map(
-    (vinculo) => vinculo.escola_id
-  );
+  // Identificar as instituicoes vinculadas.
 
-  const { data: escolas, error: escolaError } =
-    await supabase
-      .from("escolas")
-      .select("id")
-      .in("id", escolasIds)
-      .eq("ativa", true)
-      .limit(1);
+  const escolasIds = [
+    ...new Set(
+      vinculos.map(
+        (vinculo) => vinculo.escola_id
+      )
+    ),
+  ];
+
+  // Verificar se existe uma instituicao ativa.
+
+  const {
+    data: escolas,
+    error: escolaError,
+  } = await supabase
+    .from("escolas")
+    .select("id")
+    .in("id", escolasIds)
+    .eq("ativa", true)
+    .limit(1);
 
   if (
     escolaError ||
@@ -105,14 +125,25 @@ async function validarAcessoGestor(
 export async function exigirPerfil(
   tipo: TipoPerfil
 ) {
+
   const perfil = await obterPerfilAtual();
+
+  // Impedir acesso a outros tipos de painel.
 
   if (perfil.tipo !== tipo) {
     redirect("/acesso-negado");
   }
 
-  if (tipo === "gestor") {
-    await validarAcessoGestor(perfil.id);
+  // Validar o acesso institucional.
+
+  if (
+    tipo === "gestor" ||
+    tipo === "professor"
+  ) {
+    await validarAcessoInstitucional(
+      perfil.id,
+      tipo
+    );
   }
 
   return perfil;
